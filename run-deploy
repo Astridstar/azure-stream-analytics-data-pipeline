@@ -1,0 +1,28 @@
+#!/bin/bash
+
+export resourceGroup='gilgamesh'
+export resourceLocation='Australia East'
+export cosmosDatabaseAccount='gilcosmosacc'
+export cosmosDatabase='gilcosmosdb'
+export cosmosDataBaseCollection='taxidata'
+export eventHubNamespace='gileventhub'
+
+# Deploy resources
+az group deployment create --resource-group $resourceGroup \
+  --template-file ./azure/deployresources.json --parameters \
+  eventHubNamespace=$eventHubNamespace \
+  outputCosmosDatabaseAccount=$cosmosDatabaseAccount \
+  outputCosmosDatabase=$cosmosDatabase \
+  outputCosmosDatabaseCollection=$cosmosDataBaseCollection \
+  query='@./azure/average-tip-per-mile-pipeline.asaql'
+
+# Create a database
+az cosmosdb database create --name $cosmosDatabaseAccount \
+    --db-name $cosmosDatabase --resource-group $resourceGroup
+
+# Create a collection
+az cosmosdb collection create --collection-name $cosmosDataBaseCollection \
+    --name $cosmosDatabaseAccount --db-name $cosmosDatabase \
+    --resource-group $resourceGroup
+
+    
